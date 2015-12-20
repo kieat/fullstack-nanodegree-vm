@@ -124,6 +124,29 @@ def testPairings():
             "After one match, players with one win should be paired.")
     print "8. After one match, players with one win are paired."
 
+def testPlayersX(players):
+    deleteMatches()
+    deletePlayers()
+    for player in players:
+      registerPlayer(player)
+    
+    i = len(players)
+    while 1 == 1:
+      pairings = swissPairings()
+      #print i
+      #print pairings
+      for pairing in pairings:
+        #print pairing[0] + pairing[2]
+        reportMatch(pairing[0],pairing[2])
+      i /= 2
+      #print playerStandings()
+      if i == 1:
+        break
+    
+    print "9. To display whole standings." + "(" + str(len(players)) + " players)"
+    for stand in playerStandings():
+      print stand
+    
 
 if __name__ == '__main__':
     testDeleteMatches()
@@ -134,6 +157,7 @@ if __name__ == '__main__':
     testStandingsBeforeMatches()
     testReportMatches()
     testPairings()
+    testPlayersX('ABCDEFGHIJKLMNOP')
     print "Success!  All tests pass!"
 
 
