@@ -6,66 +6,61 @@
 import psycopg2
 import re
 
-def connect():
+def connect(db_name='tournament'):
     """Connect to the PostgreSQL database.  Returns a database connection."""
-    return psycopg2.connect("dbname=tournament")
-def exeQ(q,v = ''):
-    """Execute SQL query
+    db = psycopg2.connect("dbname={}".format(db_name))
+    cursor = db.cursor()
+    return db,cursor
+
+def is_select(q):
+    if q.upper().find('SELECT',0,6) == 0:
+      return True
+    else:
+      return False
+
+def query(q,v=''):
+    """To execute SQL query of (C)INSERT,(U)UPDATE,(D)DELETE, as these just return that is if successful or not, and number of affected row(s)."""
+    """To execute SQL query of (R)SELECT, and returns list of fetched records."""
+    db,cursor = connect()
     
-    Args:
-      q: SQL query string.
-    Returns:
-      If fetch nothing, returns None. Otherwise, returns fetched data.
-    """
-    conn = connect()
-    c = conn.cursor()
-    result = None
-    
-    pattern = r"; *$"
-    if not re.search(pattern,q):
-      q+= ";"
+    if is_select(q) == True:
+      result,row_count = [],0
+    else:
+      result,row_count = False,0
     
     try:
-      c.execute(q,v)
+      cursor.execute(q,v)
+      row_count = cursor.rowcount
+      
+      if is_select(q) == True:
+        result = cursor.fetchall()
+      else:
+        if row_count > 0:
+          result = True
     except psycopg2.Error as e:
       print e.pgerror
-    except psycopg2.Warning as w:
-      print w
     except:
-      print 'error'
-    
-    #print '--> ' + 'running:' + c.mogrify(q,v)
-    #print '---> ' + 'rowcount:' + str(c.rowcount) + ' ' + 'rownumber:' + str(c.rownumber)
-
-    try:
-      result = c.fetchall()
-    except psycopg2.ProgrammingError as pe:
-      result = None
-    
-    #print '----> ' + str(result)
-    
-    c.connection.commit()
-    c.close()
-    conn.close()
-
-    return result
+      print('<unexpected error>',q,v,result,row_count,)
+    finally:
+      cursor.connection.commit()
+      db.close()
+      return result,row_count
     
 def deleteMatches():
     """Remove all the match records from the database."""
-    exeQ('DELETE FROM match_record;')
+    query('DELETE FROM matches;')
 
 def deletePlayers():
     """Remove all the player records from the database."""
-    exeQ('DELETE FROM players;')
+    query('DELETE FROM players;')
+    query('ALTER SEQUENCE player_id RESTART WITH 1;')
 
 def countPlayers():
     """Returns the number of players currently registered."""
-    p_count = exeQ('SELECT count(*) FROM players;')
+    result = query('SELECT count(*) FROM players;')[0]
     
-    p_count = p_count[0][0]
+    return result[0][0]
     
-    return p_count
-
 def registerPlayer(name):
     """Adds a player to the tournament database.
   
@@ -75,13 +70,12 @@ def registerPlayer(name):
     Args:
       name: the player's full name (need not be unique).
     """
-    max_id = exeQ("SELECT nextval('player_id');")
-    max_id = str(max_id[0][0])
+    result = query("SELECT nextval('player_id');")[0]
+    max_id = result[0][0]
     
-    q = 'INSERT INTO Players (p_id,p_name) VALUES (%s,%s);'
-    v = (max_id, name,)
-    
-    exeQ(q,v)
+    q = 'INSERT INTO players (id,name,score,rounds) VALUES (%s,%s,%s,%s);'
+    v = (max_id,name,0,0)
+    query(q,v)
     
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
@@ -96,27 +90,15 @@ def playerStandings():
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
-    records = exeQ('SELECT p_id,m_record FROM match_record ORDER BY m_record DESC, p_id;')
-    players = exeQ('SELECT p_id,p_name FROM players ORDER BY p_id;')
+    players = query('SELECT id,name,score,rounds FROM players ORDER BY score DESC,id;')[0]
     standings = []
-    dict_players = {}
     
     if players == []:
       return []
     
-    #convert list to dictionary
     for player in players:
-      dict_players[player[0]] = player[1]
+      standings.append((player[0],player[1],player[2],player[3],))
     
-    #if no records exist, assign 0 to wins,matches
-    if records == []:
-      for player in players:
-        standings.append((player[0],player[1],0,0,))
-    #if records exist, count '1' for wins and count all length for matches
-    else:
-      for record in records:
-        standings.append((record[0],dict_players[record[0]],record[1].count('1'),len(record[1]),))
-
     return standings
     
 def reportMatch(winner, loser):
@@ -126,23 +108,18 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
-    records = exeQ('SELECT p_id,m_record FROM match_record WHERE p_id = %s or p_id = %s;',(winner,loser,))
-    if records == None:
-      return
+    row_count = query('INSERT INTO matches (winner,loser) values (%s,%s)',(winner,loser))[1]
+    assert(row_count == 1),'failed to insert result of this match'
     
-    players = [winner,loser]
-    scores = {winner:'1',loser:'0'}
+    #To pre-select players' score and number of rounds
+    players = query('SELECT id,score,rounds FROM players WHERE id = %s or id = %s;',(winner,loser,))[0]
+    #To define scores for winner and loser
+    scores = {winner:1,loser:0}
     
-    #if no records exist, insert new record into database
-    if records == []:
-      for player in players:
-        exeQ('INSERT INTO match_record (p_id,m_record) values (%s,%s);',(player,scores[player],))
-    #if records exist, update old record using new one
-    else:
-      for record in records:
-        #update record, if win, concatenate with '1', but with '0'
-        #for example, if first and third one are win, '1','1','0','0' => '11','10','01','00'
-        exeQ('UPDATE match_record SET m_record = %s WHERE p_id = %s;',(record[1] + scores[record[0]],record[0],))
+    for player in players:
+      #column(score)  -add 1 to winner,otherwise 0
+      #column(rounds) -add 1 to both players
+      query('UPDATE players SET score = %s , rounds = %s WHERE id = %s;',(player[1] + scores[player[0]], player[2] + 1, player[0],))
     
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
@@ -162,6 +139,7 @@ def swissPairings():
     pairings = []
     
     standings = playerStandings()
+    assert(len(standings) % 2 == 0),'number of players is not even.'
     
     #append tuples
     i = 0

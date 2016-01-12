@@ -5,17 +5,23 @@
 --
 -- You can write comments in this file by starting them with two dashes, like
 -- these lines here.
+DROP DATABASE IF EXISTS tournament;
 CREATE DATABASE tournament;
 \c tournament;
 
-CREATE SEQUENCE player_id START WITH 1;
+--use this sequence,thus players' id could restart with 1 after deleting all players
+CREATE SEQUENCE player_id IF NOT EXISTS START WITH 1;
 
 CREATE TABLE players (
-    p_id    varchar(3),
-    p_name  text
+    id    INTEGER PRIMARY KEY, --player's id
+    name  text NOT NULL,       --player's name
+    score INTEGER,
+    rounds INTEGER
 );
 
-CREATE TABLE match_record (
-    p_id    varchar(3),
-    m_record text
+CREATE TABLE matches (
+    id    SERIAL PRIMARY KEY,  --automatically increase
+    winner INTEGER REFERENCES players(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    loser INTEGER REFERENCES players(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CHECK (winner <> loser)
 );

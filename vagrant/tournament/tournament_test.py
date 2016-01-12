@@ -133,20 +133,15 @@ def testPlayersX(players):
     i = len(players)
     while 1 == 1:
       pairings = swissPairings()
-      #print i
-      #print pairings
       for pairing in pairings:
-        #print pairing[0] + pairing[2]
         reportMatch(pairing[0],pairing[2])
       i /= 2
-      #print playerStandings()
       if i == 1:
         break
     
     print "9. To display whole standings." + "(" + str(len(players)) + " players)"
     for stand in playerStandings():
       print stand
-    
 
 if __name__ == '__main__':
     testDeleteMatches()
