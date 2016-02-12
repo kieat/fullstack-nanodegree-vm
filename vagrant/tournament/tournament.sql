@@ -9,14 +9,9 @@ DROP DATABASE IF EXISTS tournament;
 CREATE DATABASE tournament;
 \c tournament;
 
---use this sequence,thus players' id could restart with 1 after deleting all players
-CREATE SEQUENCE player_id IF NOT EXISTS START WITH 1;
-
 CREATE TABLE players (
-    id    INTEGER PRIMARY KEY, --player's id
-    name  text NOT NULL,       --player's name
-    score INTEGER,
-    rounds INTEGER
+    id    SERIAL PRIMARY KEY, --player's id
+    name  text NOT NULL       --player's name
 );
 
 CREATE TABLE matches (
@@ -25,3 +20,35 @@ CREATE TABLE matches (
     loser INTEGER REFERENCES players(id) ON DELETE CASCADE ON UPDATE CASCADE,
     CHECK (winner <> loser)
 );
+
+CREATE VIEW win_tracker
+AS
+  SELECT players.id,
+         players.name,
+         count(matches) AS wins
+  FROM players
+       LEFT JOIN matches
+              ON players.id = matches.winner
+  GROUP BY players.id;
+
+CREATE VIEW match_tracker
+AS
+  SELECT players.id,
+         players.name,
+         count(matches) AS matches_played
+  FROM players
+       LEFT JOIN matches
+              ON players.id = matches.winner
+                 OR players.id = matches.loser
+  GROUP BY players.id;
+
+CREATE VIEW standings
+AS
+  SELECT win_tracker.id,
+         win_tracker.name,
+         win_tracker.wins,
+         match_tracker.matches_played
+  FROM win_tracker
+       LEFT JOIN match_tracker
+              ON win_tracker.id = match_tracker.id
+  ORDER BY win_tracker.wins DESC;

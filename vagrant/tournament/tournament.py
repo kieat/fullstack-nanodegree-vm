@@ -7,29 +7,39 @@ import psycopg2
 import re
 
 def connect(db_name='tournament'):
-    """Connect to the PostgreSQL database.  Returns a database connection."""
+    """
+    Connect to the PostgreSQL database.
+    Returns a database connection.
+    """
     db = psycopg2.connect("dbname={}".format(db_name))
     cursor = db.cursor()
     return db,cursor
 
 def is_select(q):
-    if q.upper().find('SELECT',0,6) == 0:
+    if q.upper().find('SELECT', 0, 6) == 0:
       return True
     else:
       return False
 
-def query(q,v=''):
-    """To execute SQL query of (C)INSERT,(U)UPDATE,(D)DELETE, as these just return that is if successful or not, and number of affected row(s)."""
-    """To execute SQL query of (R)SELECT, and returns list of fetched records."""
+def query(q, v=''):
+    """
+      To execute SQL query of (C)INSERT,(U)UPDATE,(D)DELETE, 
+    as these just return that is if successful or not, 
+    and number of affected row(s).
+    """
+    """
+      To execute SQL query of (R)SELECT, 
+    and returns list of fetched records.
+    """
     db,cursor = connect()
     
     if is_select(q) == True:
-      result,row_count = [],0
+      result, row_count = [], 0
     else:
-      result,row_count = False,0
+      result, row_count = False, 0
     
     try:
-      cursor.execute(q,v)
+      cursor.execute(q, v)
       row_count = cursor.rowcount
       
       if is_select(q) == True:
@@ -40,11 +50,11 @@ def query(q,v=''):
     except psycopg2.Error as e:
       print e.pgerror
     except:
-      print('<unexpected error>',q,v,result,row_count,)
+      print('<unexpected error>', q, v, result, row_count,)
     finally:
       cursor.connection.commit()
       db.close()
-      return result,row_count
+      return result, row_count
     
 def deleteMatches():
     """Remove all the match records from the database."""
@@ -53,7 +63,6 @@ def deleteMatches():
 def deletePlayers():
     """Remove all the player records from the database."""
     query('DELETE FROM players;')
-    query('ALTER SEQUENCE player_id RESTART WITH 1;')
 
 def countPlayers():
     """Returns the number of players currently registered."""
@@ -64,40 +73,34 @@ def countPlayers():
 def registerPlayer(name):
     """Adds a player to the tournament database.
   
-    The database assigns a unique serial id number for the player.  (This
-    should be handled by your SQL database schema, not in your Python code.)
+    The database assigns a unique serial id number for the player.
+    (This should be handled by your SQL database schema, 
+    not in your Python code.)
   
     Args:
       name: the player's full name (need not be unique).
     """
-    result = query("SELECT nextval('player_id');")[0]
-    max_id = result[0][0]
-    
-    q = 'INSERT INTO players (id,name,score,rounds) VALUES (%s,%s,%s,%s);'
-    v = (max_id,name,0,0)
+    q = 'INSERT INTO players (name) '
+    q += 'VALUES (%s);'
+    v = (name,)
     query(q,v)
     
 def playerStandings():
-    """Returns a list of the players and their win records, sorted by wins.
+    """Returns a list of the players and their win records, 
+    sorted by wins.
 
-    The first entry in the list should be the player in first place, or a player
-    tied for first place if there is currently a tie.
+    The first entry in the list should be the player in first place, 
+    or a player tied for first place if there is currently a tie.
 
     Returns:
-      A list of tuples, each of which contains (id, name, wins, matches):
+      A list of tuples, each of which contains id, name, wins, matches:
         id: the player's unique id (assigned by the database)
         name: the player's full name (as registered)
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
-    players = query('SELECT id,name,score,rounds FROM players ORDER BY score DESC,id;')[0]
-    standings = []
-    
-    if players == []:
-      return []
-    
-    for player in players:
-      standings.append((player[0],player[1],player[2],player[3],))
+    q = 'SELECT * FROM standings;'
+    standings = query(q)[0]
     
     return standings
     
@@ -108,26 +111,18 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
-    row_count = query('INSERT INTO matches (winner,loser) values (%s,%s)',(winner,loser))[1]
+    q = 'INSERT INTO matches (winner, loser) values (%s, %s)'
+    row_count = query(q, (winner, loser))[1]
     assert(row_count == 1),'failed to insert result of this match'
-    
-    #To pre-select players' score and number of rounds
-    players = query('SELECT id,score,rounds FROM players WHERE id = %s or id = %s;',(winner,loser,))[0]
-    #To define scores for winner and loser
-    scores = {winner:1,loser:0}
-    
-    for player in players:
-      #column(score)  -add 1 to winner,otherwise 0
-      #column(rounds) -add 1 to both players
-      query('UPDATE players SET score = %s , rounds = %s WHERE id = %s;',(player[1] + scores[player[0]], player[2] + 1, player[0],))
     
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
   
-    Assuming that there are an even number of players registered, each player
-    appears exactly once in the pairings.  Each player is paired with another
-    player with an equal or nearly-equal win record, that is, a player adjacent
-    to him or her in the standings.
+    Assuming that there are an even number of players registered, 
+    each player appears exactly once in the pairings.  
+    Each player is paired with another player with an equal 
+    or nearly-equal win record, 
+    that is, a player adjacent to him or her in the standings.
   
     Returns:
       A list of tuples, each of which contains (id1, name1, id2, name2)
@@ -144,7 +139,12 @@ def swissPairings():
     #append tuples
     i = 0
     while i < len(standings):
-      pairings.append((standings[i][0],standings[i][1],standings[i+1][0],standings[i+1][1],))
+      pairings.append((standings[i][0], 
+                       standings[i][1], 
+                       standings[i+1][0], 
+                       standings[i+1][1],
+                      )
+                     )
       i += 2
     
     return pairings
