@@ -1,0 +1,79 @@
+
+{% macro category_li(selected, name, count, id, parent_flag) %}
+  <li>
+    {% if selected == True %}
+    <strong><a href="/category/{{ id }}">{{ name }}</a></strong>
+    {% else %}
+    <em><a href="/category/{{ id }}">{{ name }}</a></em>
+    {% endif %}
+    {% if parent_flag != True %}
+    <span> ({{ count }})</span>
+    {% endif %}
+  </li>
+{% endmacro %}
+
+{% macro display_item(item) %}
+<div id="container-item" class="container">
+  {% if item != None %}
+  <div class="item-header">
+    <image class="image-preview" src="data:image/jpeg;base64,{% if item.image != None %}{{ item.image.encode('base64') }}{% endif %}"></image>
+    <h3 class="item-name">{{ item.name }}</h3>
+    <em class="item-toolbar">
+      {% if check_signin_in_template() %}
+        {% if current_user.id == item.user_id %}
+      <a href="/item/{{ item.id }}/edit">edit</a>
+      <a href="/item/{{ item.id }}/delete">delete</a>
+        {% endif %}
+      {% endif %}
+    </em>
+  </div>
+  <p class="detail">{{ item.longtext }}</p>
+  {% else %}
+  <p class="detail">No item exist</p>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{% macro edit_item(item) %}
+<div id="container-item" class="container">
+  <form class="edit" enctype="multipart/form-data" action="{% if item.id == None %}{{ url_for('item.item_create', cid = item.category_id) }}{% else %}{{ url_for('item.item_edit', item_id = item.id, next = request.path) }}{% endif %}" method="post">
+    <input type="hidden" name="item-category_id" value="{{ item.category_id }}"></input>
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"></input>
+    <div class="subcomp">
+      <label for="item-name">Title</label>
+      <input id="item-name" class="item-name" type="text" name="item-name" value="{{ item.name }}"></input>
+    </div>
+    <div class="subcomp">
+      <label for="item-longtext">Text</label>
+      <textarea name="item-longtext" class="item-longtext" id="item-longtext">{% if item.longtext != None %}{{ item.longtext }}{% endif %}</textarea>
+    </div>
+    <div class="subcomp">
+      <input class="item-upload_image" id="item-upload_image" type="file" name="item-image" accept="image/*"></input>
+      <label class="item-upload_image" for="item-upload_image">Choose a file</label>
+      <image class="image-preview" id="image-preview" src="{% if item.image != None %}data:image/jpeg;base64,{{ item.image.encode('base64') }}{% else %}{% endif %}"></image>
+    </div>
+    <div class="bottom">
+      <input class="submit" type="submit" value="Submit"></input>
+      <a href="{{ redirect_in_template(url_for('category.home')) }}"><input class="cancel" type="button" value="Cancel"></input></a>
+    </div>
+  </form>
+</div>
+{% endmacro %}
+
+{% macro list_item(items) %}
+<ul id="list-items">
+  {% for i in items %}
+  <li>
+    <em><a class="item" href="/category/{{ i.category_id }}/item/{{ i.id }}">{{ i.name }}</a></em>
+    {% if check_signin_in_template() %}
+      {% if current_user.id == i.user_id %}
+    <a class="button" href="{{ url_for('item.item_edit', item_id = i.id, next = request.path) }}">edit</a>
+    <a class="button" href="{{ url_for('item.item_delete', item_id = i.id, next = request.path) }}">delete</a>
+      {% endif %}
+    {% endif %}
+  </li>
+  {% else %}
+  <li><em>No item exist</em></li>
+  {% endfor %}
+</ul>
+{% endmacro %}

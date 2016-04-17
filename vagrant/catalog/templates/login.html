@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block body %}
+<div id="container-login" class="container"><div>
+  <form action="{{ url_for('user.do_login') }}" method="post" class="login">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"></input>
+    <div class="message">
+      <em class="error"></em>
+    </div>
+    <div class="subcomp">
+      <label for="email">E-mail</label>
+      <input type="text" size="13" id="email" name="email" autofocus="autofocus" value="{% if email != None %}{{ email }}{% endif %}"></input>
+    </div>
+    <div class="subcomp">
+      <label for="password">Password</label>
+      <input type="password" size="13" name="password" id="password"></input>
+    </div>
+    <div class="buttons">
+      <input type="submit" value="Login" class="btn_login"></input>
+      <a href="{{ url_for('user.signup') }}" class="btn_signup">Sign up</a>
+    </div>
+    <div class="g-signin2" data-onsuccess="onSignIn" data-width="170" data-height="30" data-longtitle="true"></div>
+    <div class="bottom">
+      <em class="bottom"></em>
+    </div>
+  </form>
+</div></div>
+
+{% endblock %}

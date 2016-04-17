@@ -1,0 +1,298 @@
+/**********/
+/*Message Zone*/
+#first_layer, #background_layer {
+  width: 100%;
+  position: fixed;
+  top: 0px;
+}
+#first_layer {
+  background-color: transparent;
+  text-align: center;
+}
+#background_layer {
+  opacity: 0.2;
+  background-color: red;
+}
+#first_layer p {
+  opacity: 1;
+  color: red;
+}
+/********************/
+/**********/
+/*Default style for most of elements*/
+a:link, a:visited, a:hover, a:active {
+  text-decoration: none;
+  color: black;
+}
+body, section, div, a, ul, li, em, p, strong, span, 
+label, input, h3, textarea, image {
+  margin: 0 0 0 0; padding: 0 0 0 0;
+}
+body {
+  float: left;
+  width: 100%;
+  min-width: 400px;
+}
+div.header, div.sub_header, div.contents, 
+div#container-login, div#container-categories, 
+div#container-items, div.items-toolbar, div#container-item {
+  float: left;
+  width: 100%;
+  font-size: 13px;
+  margin-left: 3px;
+}
+ul {
+  list-style-type: none;
+}
+/********************/
+/**********/
+/*Specific style for header*/
+div.header {
+  margin-top: 3px;
+  text-align: center;
+}
+div.header a.to_home {
+  display: inline-block;
+  padding: 10px 25px;
+  background-color: #fefefe;
+  border-top: 1px solid #ffffff;
+  border-left: 1px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  border-right: 2px solid #ffffff;
+  transition: border-top 1s, border-left 1s, border-bottom 1s, border-right 1s;
+}
+div.header a.to_home:hover {
+  border-top: 1px solid #fafafa;
+  border-left: 1px solid #f2f2f2;
+  border-bottom: 2px solid #bbbbbb;
+  border-right: 2px solid #bbbbbb;
+  /*box-shadow: 0 0 3px 3px rgba(66,133,244,.3);*/
+}
+/********************/
+/**********/
+/*Specific style for sub_header*/
+div.sub_header {
+  margin-bottom: 15px;
+}
+div.sub_header a {
+  padding: 10px;
+  display: inline-block;
+}
+div.sub_header a:hover {
+  text-decoration: underline;
+}
+div.sub_header a.login, .sub_header a.logout {
+  margin-left: 20px;
+}
+div.sub_header em {
+  display: inline-block;
+}
+/********************/
+/**********/
+/*Specific style for login*/
+#container-login form.login {
+  margin: auto;
+  width: 300px;
+  border: 1px solid #e2e2e2;
+  border-radius: 3px;
+  padding: 10px;
+}
+#container-login form.login em.error {
+  color: red;
+  display: inline-block;
+}
+#container-login form.login div.subcomp {
+  padding: 2px 0px;
+  width: 100%;
+}
+#container-login form.login div.subcomp label {
+  min-width: 60px;
+  display: inline-block;
+}
+#container-login form.login div.buttons {
+  padding: 10px 10px;
+}
+#container-login form.login div.buttons input.btn_login {
+  border-radius: 5px;
+  border: 1px solid #cccccc;
+  padding: 4px 10px;
+  color: #ffffff;
+  background-color: #dddddd;
+  transition: background-color 1s;
+}
+#container-login form.login div.buttons input.btn_login:hover {
+  cursor: pointer;
+  background-color: #bbbbbb;
+}
+#container-login form.login div.buttons a.btn_signup {
+  margin-left: 10px;
+}
+#container-login form.login div.buttons a.btn_signup:hover {
+  text-decoration: underline;
+}
+#container-login form.login em.bottom {
+  display: inline-block;
+}
+/********************/
+/**********/
+/*Specific style for category*/
+#container-categories {
+  max-width: 170px;
+  padding-right: 15px;
+  border-right: 5px groove #bbbbbb;
+}
+#container-categories ul {
+  padding-left: 10px;
+}
+#container-categories ul ul {
+  list-style-type: disc;
+  list-style-position: inside;
+}
+#container-categories li {
+  padding-left: 10px;
+  background-color: #ffffff;
+  transition: background-color .35s;
+}
+#container-categories li:hover {
+  background-color: #f0f0f0;
+}
+#container-categories li em a:hover {
+  text-decoration: underline;
+}
+/********************/
+/**********/
+/*Specific style for items list*/
+#container-items {
+  max-width: 320px;
+  margin-left: 10px;
+}
+#container-items .items-toolbar {
+  border-bottom: 3px groove #bbbbbb;
+}
+#container-items .items-toolbar a.create_item {
+  display: inline-block;
+  padding: 10px 25px;
+  padding-left: 40px;
+  margin: 5px 0px;
+  background-image: url("ic_queue_black_18dp.png");
+  background-repeat: no-repeat;
+  background-position: 15px;
+  background-color: #ffffff;
+  color: #333333;
+  border-radius: 3px;
+  border: 1px solid #aaaaaa;
+}
+#container-items .items-toolbar a.create_item:hover {
+  text-decoration: underline;
+}
+#container-items ul#list-items {
+  margin-top: 10px;
+}
+#container-items ul#list-items li em a.item {
+  width: 200px;
+  padding: 10px 0px;
+  background-color: #ffffff;
+  border-radius: 2px;
+  display: inline-block;
+  transition: background-color .15s;
+}
+#container-items ul#list-items li em a.item:hover {
+  /*background-image: linear-gradient(#eeeeee, #ffffff);*/
+  background-color: #eeeeee;
+}
+#container-items ul#list-items li a.button {
+  margin-left: 5px;
+}
+#container-items ul#list-items li a.button:hover {
+  text-decoration: underline;
+}
+#container-item div.item-header .image-preview {
+  width: 200px;
+  height: 200px;
+  display: inline-block;
+}
+#container-item div.item-header .item-name {
+  display: inline-block;
+  vertical-align: top;
+}
+#container-item div.item-header em.item-toolbar {
+  vertical-align: top;
+  display: inline-block;
+  border-bottom: 1px solid #cccccc;
+  padding-bottom: 3px;
+  margin-bottom: 5px;
+}
+#container-item div.item-header em.item-toolbar a {
+  margin-left: 5px;
+  font-size: 11px;
+}
+#container-item div.item-header em.item-toolbar a:hover {
+  text-decoration: underline;
+}
+#container-item p.detail {
+  background-color: #f6f6f6;
+  min-height: 100px;
+  border-bottom: 1px solid #cccccc;
+  border-right: 2px solid #dddddd;
+}
+
+#container-item form.edit {
+  min-width: 350px;
+}
+#container-item form.edit div.subcomp {
+  margin: 5px 0px;
+}
+#container-item form.edit label {
+  vertical-align: top;
+}
+#container-item form.edit .item-name {
+  width: 200px;
+}
+#container-item form.edit .item-longtext {
+  width: 300px;
+  height: 100px;
+}
+#container-item form.edit input.item-upload_image {
+  display: none;
+}
+#container-item form.edit label.item-upload_image {
+  background-color: #999999;
+  font-weight: 700;
+  color: #ffffff;
+  border-radius: 2px;
+  margin-right: 10px;
+  cursor: pointer;
+  padding: 5px;
+  display: inline-block;
+}
+#container-item form.edit div.subcomp .image-preview {
+  width: 100px;
+  height: 100px;
+}
+#container-item form.edit div.bottom {
+  margin: 5px 0px;
+}
+#container-item form.edit div.bottom input.submit {
+  border-radius: 5px;
+  border: 1px solid #cccccc;
+  padding: 4px 10px;
+  color: #000000;
+  background-color: #fafafa;
+  transition: background-color 1s;
+}
+#container-item form.edit div.bottom input.submit:hover {
+  cursor: pointer;
+  background-color: #ffffff;
+}
+#container-item form.edit div.bottom input.cancel {
+  border-radius: 5px;
+  border: 1px solid #cccccc;
+  padding: 4px 10px;
+  color: #dddddd;
+  background-color: #999999;
+  transition: background-color 1s;
+}
+#container-item form.edit div.bottom input.cancel:hover {
+  cursor: pointer;
+  background-color: #aaaaaa;
+}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="google-signin-client_id" content="561642591931-v5v34heqqte1oghuep503dtg6nttdqtd.apps.googleusercontent.com" />
+  <title>{{ title }}</title>
+  <link rel='stylesheet' type='text/css' href="{{ url_for('static', filename= 'style.css') }}">
+</head>
+<body>
+  <section id="first_layer">
+    {% with errors = get_flashed_messages(category_filter=["error"]) %}
+    {% if errors %}
+    {% for msg in errors | reverse %}
+    <p class="error">{{ msg }}</p>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+  </section>
+  <section id="background_layer"></section>
+  <section id="second_layer">
+  <div class="header">
+    <a class="to_home" href="{{ url_for('category.home') }}">Home</a>
+  </div>
+  <div class="sub_header">
+  {% if check_signin_in_template() %}
+  <em>Hello, {{ current_user.id }}.</em>
+  {% endif %}
+  <a href="{{ url_for('user.myaccount') }}" class="login_required_obso">My Account</a>
+  {% if check_signin_in_template() %}
+  <a class="logout" onclick="signOut();" href="">Logout</a>
+  {% else %}
+  <a class="login" href="{% if url_for('user.do_login') == request.path %}{{ request.url }}{% else %}{{ url_for('user.do_login', next=request.path) }}{% endif %}">Login</a>
+  {% endif %}
+  </div>
+  <div class="contents">
+  {% block body %}{% endblock %}
+  </div>
+  </section>
+  <script src="{{ url_for('static', filename= 'jquery-2.2.0.min.js') }}"></script>
+  <script>
+    function redirect_url_for_home(){
+      return "{{ redirect_in_template(url_for('category.home')) }}";
+    }
+    function url_for_logout(){
+      return "{{ url_for('user.do_logout', next=request.path) }}";
+    }
+  </script>
+  <script src="https://apis.google.com/js/platform.js?onload=onLoad" async defer></script>
+  <script src="{{ url_for('static', filename= 'control.js') }}"></script>
+</body>
+</html>

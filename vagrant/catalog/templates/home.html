@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from 'macros.html' import category_li, display_item, list_item with context %}
+{% block body %}
+<div id="container-categories" class="container">
+<ul class="categories">
+  {% for c in categories if c.parent_flag == True %}
+    {{ category_li(c.selected_flag, c.name, c.count, c.id, c.parent_flag) }}
+  {% endfor %}
+  <ul class="categories">
+    {% for c in categories if c.parent_flag == False %}
+      {{ category_li(c.selected_flag, c.name, c.count, c.id, c.parent_flag) }}
+    {% endfor %}
+  </ul>
+  {% if categories|length == 0 %}
+  <li><em>No category exist</em></li>
+  {% endif %}
+</ul>
+</div>
+<div id="container-items" class="container">
+<div class="items-toolbar">
+{% for c in categories if c.selected_flag == True %}
+<a class="create_item" href="{{ url_for('item.item_create', cid = c.id) }}">Create Item</a>
+{% endfor %}
+</div>
+{% if item != None %}
+  {{ display_item(item) }}
+{% else %}
+  {{ list_item(items) }}
+{% endif %}
+</div>
+{% endblock %}

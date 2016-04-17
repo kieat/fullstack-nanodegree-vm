@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% from 'macros.html' import category_li, display_item, edit_item with context %}
+{% block body %}
+
+  {% if display == True %}
+    {{ display_item(item) }}
+  {% else %}
+    {{ edit_item(item) }}
+  {% endif %}
+  
+{% endblock %}
