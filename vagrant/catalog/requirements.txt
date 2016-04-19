@@ -1,0 +1,4 @@
+###### Requirements with Version Specifiers ######
+flask == 0.10.1
+sqlalchemy == 0.8.4
+oauth2client == 1.5.2

@@ -65,7 +65,10 @@ def printout_all_data():
   for subclass in Base.__subclasses__():
     for instance in session.query(subclass).all():
       print instance
+print __main__
+
 if __name__ == '__main__':
+
   delete_all_data(1)
   
   build_user()

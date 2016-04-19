@@ -7,12 +7,11 @@ from database_setup import User
 from hmac import new as hmac_new
 from os import urandom
 import random, string
-from itsdangerous import URLSafeTimedSerializer, base64_decode
 from functools import wraps
 from urlparse import urlparse, parse_qs
 
 from oauth2client import client, crypt
-CLIENT_ID = '561642591931-v5v34heqqte1oghuep503dtg6nttdqtd.apps.googleusercontent.com'
+import config
 
 blueprint = Blueprint('user', __name__)
 
@@ -20,6 +19,7 @@ def login_required(*args, **kwargs):
   def decorator(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+      print 'step: login_required decorator.'
       if check_signin() == False:
         print 'login_required: User is NOT signed in. Checked in login_required decorator.'
         return redirect(url_for('user.do_login', next = request.path))
@@ -31,6 +31,7 @@ def login_required(*args, **kwargs):
 
 @blueprint.route('/login', methods=['GET', 'POST'])
 def do_login():
+  print 'step: do_login() with request method - ', request.method
   user = None
   _is_authenticated = False
   
@@ -122,6 +123,7 @@ def inject_context():
     print 'successful to inject user.'
   
   def check_signin_in_template():
+    print 'step: check_signin_in_template().'
     return check_signin()
   
   def redirect_in_template(last_path):
@@ -180,6 +182,7 @@ def redirect_common(last_path, just_path = False):
   
 @blueprint.route('/googlesignin', methods=['POST'])
 def googlesignin():
+  print 'step: googlesignin'
   token = request.form['idtoken']
   
   if token == None:
@@ -192,6 +195,7 @@ def googlesignin():
   result, idinfo = get_info_from_google(token)
   
   if result == False:
+    print 'googlesignin: failed to get info from google.'
     session.pop('signin_party', None)
     return 'False'
   
@@ -273,7 +277,7 @@ def get_info_from_google(token = None):
       return False, {}
   
   try:
-    idinfo = client.verify_id_token(token, CLIENT_ID)
+    idinfo = client.verify_id_token(token, config.CLIENT_ID)
     # If multiple clients access the backend server:
     #if idinfo['aud'] not in [ANDROID_CLIENT_ID, IOS_CLIENT_ID, WEB_CLIENT_ID]:
     #    raise crypt.AppIdentityError("Unrecognized client.")
@@ -299,7 +303,12 @@ def generate_csrf_token():
 
 def csrf_protect():
   print 'csrf_protect'
+  print request.method
+  
   if request.method == "POST":
     token = session.pop('_csrf_token', None)
-    if not token or token != request.form.get('_csrf_token'):
+    token_outside = request.form.get('_csrf_token')
+    if token_outside == None:
+      token_outside = request.args.get('_csrf_token')
+    if not token or token != token_outside:
         abort(403)

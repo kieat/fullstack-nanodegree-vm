@@ -1,6 +1,6 @@
 # coding=utf-8
 from flask import Blueprint, render_template, request, \
-                  redirect, url_for, json, flash, current_app
+                  redirect, url_for, json, flash, current_app, abort
 from database_setup import Item
 from user import login_required, redirect_common, get_user_id_from_session
 import os
@@ -10,12 +10,21 @@ blueprint = Blueprint('item', __name__)
 @blueprint.route('/category/<int:cid>/item.json')
 @blueprint.route('/item/<int:item_id>.json')
 def item_json(cid = None, item_id = None):
+  if item_id == None and cid == None:
+    abort(404)
   if item_id != None:
     item = Item.get_by_id(item_id)
-    json_response = json.jsonify(Item=item.serialize)
+    if item == None:
+      return abort(404)
+    else:
+      json_response = json.jsonify(Item=item.serialize)
   elif cid != None:
     items = Item.get_by_category(cid)
-    json_response = json.jsonify(Items = [i.serialize for i in items])
+    if items == []:
+      abort(404)
+    else:
+      json_response = json.jsonify(Items = [i.serialize for i in items])
+  
   return json_response
 
 @blueprint.route('/item/<int:item_id>')
@@ -34,7 +43,8 @@ def item_edit(item_id = None):
     item.name = request.form['item-name']
     item.longtext = request.form["item-longtext"]
     file = request.files["item-image"]
-    item.image = file.stream.getvalue()
+    print type(file)
+    item.image = file.read() #stream.getvalue()
 
     #file.save(os.path.join(current_app.root_path, file.filename))
     
@@ -63,7 +73,8 @@ def item_create(cid = None):
     item.name = request.form['item-name']
     item.longtext = request.form["item-longtext"]
     file = request.files["item-image"]
-    item.image = file.stream.getvalue()
+    print type(file)
+    item.image = file.read()
     item.user_id = get_user_id_from_session()
     result = item.add()
     if result[1] == 'error':

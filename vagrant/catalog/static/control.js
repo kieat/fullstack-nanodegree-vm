@@ -77,7 +77,12 @@ function onSignIn(googleUser) {
   $("form.login .error").html('Sending google token...');
   var id_token = googleUser.getAuthResponse().id_token;
   var xhr = new XMLHttpRequest();
-  xhr.open('POST', 'http://localhost:5000/googlesignin', true);
+  url = 'http://localhost:5000/googlesignin';
+  if ($('._csrf_token').val()){
+    param = '?_csrf_token=' + $("._csrf_token").val();
+    url = url + param
+  }
+  xhr.open('POST', url, true);
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
   xhr.onload = function() {
     console.log('Signed in as: ' + xhr.responseText);

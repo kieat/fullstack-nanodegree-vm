@@ -2,7 +2,7 @@
 {% block body %}
 <div id="container-login" class="container"><div>
   <form action="{{ url_for('user.do_login') }}" method="post" class="login">
-    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"></input>
+    <input type="hidden" name="_csrf_token" class="_csrf_token" value="{{ csrf_token() }}"></input>
     <div class="message">
       <em class="error"></em>
     </div>
